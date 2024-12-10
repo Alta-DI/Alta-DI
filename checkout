@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Basic -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Mobile Metas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- Site Metas -->
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
+
+  <title>
+    Checkout - Giftos
+  </title>
+
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+  <!-- Custom styles for this template -->
+  <link href="css/style.css" rel="stylesheet" />
+  <!-- Responsive style -->
+  <link href="css/responsive.css" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="hero_area">
+    <!-- Header Section -->
+    <header class="header_section">
+      <nav class="navbar navbar-expand-lg custom_nav-container ">
+        <a class="navbar-brand" href="index.html">
+          <span>Giftos</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class=""></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="shop.html">Shop</a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="checkout.html">Checkout</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="contact.html">Contact</a>
+            </li>
+          </ul>
+          <div class="user_option">
+            <a href="">
+              <i class="fa fa-user" aria-hidden="true"></i>
+              <span>Login</span>
+            </a>
+            <a href="checkout.html">
+              <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <!-- End Header Section -->
+  </div>
+
+  <!-- Checkout Section -->
+  <section class="checkout_section layout_padding">
+    <div class="container">
+      <div class="heading_container heading_center">
+        <h2>Checkout</h2>
+      </div>
+      <div class="row">
+        <div class="col-md-8">
+          <h5>Billing Details</h5>
+          <form action="order-success.html" method="POST">
+            <div class="form-group">
+              <label for="name">Full Name</label>
+              <input type="text" class="form-control" id="name" name="name" placeholder="Enter your full name" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+              <label for="address">Address</label>
+              <input type="text" class="form-control" id="address" name="address" placeholder="Enter your address" required>
+            </div>
+            <div class="form-group">
+              <label for="city">City</label>
+              <input type="text" class="form-control" id="city" name="city" placeholder="Enter your city" required>
+            </div>
+            <div class="form-group">
+              <label for="postal">Postal Code</label>
+              <input type="text" class="form-control" id="postal" name="postal" placeholder="Enter postal code" required>
+            </div>
+            <div class="form-group">
+              <label for="country">Country</label>
+              <input type="text" class="form-control" id="country" name="country" placeholder="Enter your country" required>
+            </div>
+          </form>
+        </div>
+        <div class="col-md-4">
+          <h5>Your Order</h5>
+          <div class="order_summary">
+            <ul>
+              <li>Product 1 <span>$50</span></li>
+              <li>Product 2 <span>$30</span></li>
+              <li>Product 3 <span>$20</span></li>
+              <li class="total">Total <span>$100</span></li>
+            </ul>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Place Order</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End Checkout Section -->
+
+  <!-- Footer Section -->
+  <footer class="footer_section">
+    <div class="container">
+      <p>&copy; <span id="displayYear"></span> All Rights Reserved By <a href="#">Giftos</a></p>
+    </div>
+  </footer>
+  <!-- End Footer Section -->
+
+  <script src="js/jquery-3.4.1.min.js"></script>
+  <script src="js/bootstrap.js"></script>
+</body>
+
+</html>
