@@ -34,8 +34,23 @@
     function() {
         var e = (window.screen.height * window.screen.width).toString(16);
         return n() + "-" + Math.random().toString(16).replace(".", "") + "-" + t() + "-" + e + "-" + n()
+    }), d = "true" === localStorage.getItem("quick-chat-debug"), c = d ? console.log.bind(console) : e, w = d ? console.time.bind(console) : e, h = d ? console.timeEnd.bind(console) : e;
+
+    // Custom Device ID Generator
+    function getCustomDeviceId() {
+        const existingDeviceId = sessionStorage.getItem("custom_device_id");
+        if (existingDeviceId) return existingDeviceId;
+
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+        const day = String(today.getDate()).padStart(2, '0');
+        const newDeviceId = `USER_${year}${month}${day}`;
+
+        sessionStorage.setItem("custom_device_id", newDeviceId);
+        return newDeviceId;
     }
-    ), d = "true" === localStorage.getItem("quick-chat-debug"), c = d ? console.log.bind(console) : e, w = d ? console.time.bind(console) : e, h = d ? console.timeEnd.bind(console) : e;
+
     function r(e) {
         var t;
         window.quickLoadJs || (window.quickLoadJs = !0,
@@ -87,20 +102,10 @@
                     e ? m.substring(0, e) : m)
                       , m = u(n[0].src).sanboxRobotId;
                     sessionStorage.setItem("sandboxRobotId", m),
-                      
-                    // 自定义 $device_id 的生成逻辑
-                    function getCustomDeviceId() {
-                      const existingDeviceId = sessionStorage.getItem("custom_device_id");
-                      if (existingDeviceId) return existingDeviceId;
-                    
-                      const newDeviceId = "USER_" + Date();
-                      sessionStorage.setItem("custom_device_id", newDeviceId);
-                      return newDeviceId;
-                    }
                     window.CEPMixpanel = {
                         cookie: {
                             props: {
-                                $device_id: getCustomDeviceId() // 替換為默認邏輯
+                                $device_id: getCustomDeviceId() // Replace with custom logic
                             }
                         },
                         _: {
