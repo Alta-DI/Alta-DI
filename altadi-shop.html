@@ -15,39 +15,39 @@
 
   <!-- 測試跨網域追蹤 -->
 <script>
-  // Step 1: 获取或生成自定义的 `$device_id`
+  // Step 1: 自定义 $device_id 的生成和存储逻辑
   function getCustomDeviceId() {
-    // 使用时间戳生成自定义 Device ID
-    const newDeviceId = "USER_" + Date.now();
-    sessionStorage.setItem("custom_device_id", newDeviceId); // 存储到 sessionStorage
+    const newDeviceId = "USER_" + Date();
+    sessionStorage.setItem("custom_device_id", newDeviceId);
     return newDeviceId;
   }
-
   const customDeviceId = getCustomDeviceId();
   console.log("Generated custom $device_id:", customDeviceId);
 
-  // Step 2: 替换 Mixpanel 的 `$device_id`
-  document.addEventListener("DOMContentLoaded", function () {
-    function replaceMixpanelDeviceId() {
-      if (window.CEPMixpanel && window.CEPMixpanel.cookie && window.CEPMixpanel.cookie.props) {
-        // 替换默认 `$device_id`
-        window.CEPMixpanel.cookie.props.$device_id = customDeviceId;
+  // Step 2: 替换 $device_id 的逻辑
+  function replaceMixpanelDeviceId() {
+    if (window.CEPMixpanel && window.CEPMixpanel.cookie && window.CEPMixpanel.cookie.props) {
+      // 覆盖 $device_id
+      window.CEPMixpanel.cookie.props.$device_id = customDeviceId;
 
-        // 设置 `distinct_id`，保持一致
-        window.CEPMixpanel.identify(customDeviceId);
+      // 触发 identify 更新 distinct_id
+      window.CEPMixpanel.identify(customDeviceId);
 
-        console.log("Replaced Mixpanel $device_id and set distinct_id to:", customDeviceId);
-      } else {
-        console.warn("CEPMixpanel not ready, retrying...");
-        setTimeout(replaceMixpanelDeviceId, 100); // 每 100ms 重试
-      }
+      console.log("Replaced Mixpanel $device_id with:", customDeviceId);
+    } else {
+      console.warn("CEPMixpanel not ready, retrying...");
+      setTimeout(replaceMixpanelDeviceId, 100); // 每 100ms 重试
     }
+  }
 
-    // 等待 Mixpanel 初始化完成
+  // Step 3: 等待 SDK 初始化完成后替换 $device_id
+  document.addEventListener("DOMContentLoaded", function () {
+    // 确保在初始化完成后执行
     if (window.CEPMixpanel && typeof window.CEPMixpanel.onInitComplete === "function") {
       window.CEPMixpanel.onInitComplete(replaceMixpanelDeviceId);
     } else {
-      console.error("CEPMixpanel initialization function not found.");
+      console.log("Fallback to retry mechanism...");
+      replaceMixpanelDeviceId(); // 如果 onInitComplete 未触发，使用轮询重试
     }
   });
 </script>
