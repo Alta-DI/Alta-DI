@@ -36,21 +36,36 @@
         return n() + "-" + Math.random().toString(16).replace(".", "") + "-" + t() + "-" + e + "-" + n()
     }), d = "true" === localStorage.getItem("quick-chat-debug"), c = d ? console.log.bind(console) : e, w = d ? console.time.bind(console) : e, h = d ? console.timeEnd.bind(console) : e;
 
-    // Custom Device ID Generator
+    // Step 1: Custom Device ID Generator
     function getCustomDeviceId() {
-        const existingDeviceId = sessionStorage.getItem("custom_device_id");
-        if (existingDeviceId) return existingDeviceId;
+        const existingDeviceId = localStorage.getItem("custom_device_id");
+        if (existingDeviceId) {
+            return existingDeviceId; // 如果已存在，直接返回
+        }
 
         const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-        const day = String(today.getDate()).padStart(2, '0');
-        const newDeviceId = `USER_${year}${month}${day}`;
+        const formattedDate = today.getFullYear() +
+            String(today.getMonth() + 1).padStart(2, "0") +
+            String(today.getDate()).padStart(2, "0");
 
-        sessionStorage.setItem("custom_device_id", newDeviceId);
+        const newDeviceId = `USER_${formattedDate}`;
+        localStorage.setItem("custom_device_id", newDeviceId); // 存储到 localStorage
         return newDeviceId;
     }
+    // Step 2: Replace $device_id
+    function replaceDeviceId() {
+        const customDeviceId = getCustomDeviceId();
 
+        if (window.CEPMixpanel && window.CEPMixpanel.cookie && window.CEPMixpanel.cookie.props) {
+            window.CEPMixpanel.cookie.props.$device_id = customDeviceId;
+            window.CEPMixpanel.identify(customDeviceId);
+            console.log("Replaced $device_id with custom value:", customDeviceId);
+        } else {
+            console.warn("CEPMixpanel not ready yet. Retrying...");
+            setTimeout(replaceDeviceId, 100);
+        }
+    }
+    
     function r(e) {
         var t;
         window.quickLoadJs || (window.quickLoadJs = !0,
@@ -136,6 +151,33 @@
                             api_host: "https://collect.quickcep.com",
                             persistence: "localStorage",
                             loaded: function() {
+                                // Custom device ID logic
+                                function getCustomDeviceId() {
+                                    const existingDeviceId = localStorage.getItem("custom_device_id");
+                                    if (existingDeviceId) {
+                                        return existingDeviceId; // Return existing ID if available
+                                    }
+                        
+                                    // Generate new custom device ID in USER_YYYYMMDD format
+                                    const today = new Date();
+                                    const formattedDate = today.getFullYear() +
+                                        String(today.getMonth() + 1).padStart(2, "0") +
+                                        String(today.getDate()).padStart(2, "0");
+                                    const newDeviceId = `USER_${formattedDate}`;
+                                    localStorage.setItem("custom_device_id", newDeviceId); // Persist to localStorage
+                                    return newDeviceId;
+                                }
+                        
+                                // Replace $device_id after initialization
+                                const customDeviceId = getCustomDeviceId();
+                        
+                                if (window.CEPMixpanel && window.CEPMixpanel.cookie && window.CEPMixpanel.cookie.props) {
+                                    window.CEPMixpanel.cookie.props.$device_id = customDeviceId; // Replace the $device_id
+                                    window.CEPMixpanel.identify(customDeviceId); // Set distinct_id to match custom $device_id
+                                    console.log("Custom $device_id set to:", customDeviceId);
+                                } else {
+                                    console.error("Failed to access CEPMixpanel.cookie or properties.");
+                                }
                                 window.CEPMixpanel.initCompleteCb(),
                                 h("mixpanel-single-init")
                             }
