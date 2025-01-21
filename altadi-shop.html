@@ -14,47 +14,9 @@
   <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
 
   <!-- 測試跨網域追蹤 -->
-<script>
-  // Step 1: 自定义 $device_id 的生成和存储逻辑
-  function getCustomDeviceId() {
-    const newDeviceId = "USER_" + Date();
-    sessionStorage.setItem("custom_device_id", newDeviceId);
-    return newDeviceId;
-  }
-  const customDeviceId = getCustomDeviceId();
-  console.log("Generated custom $device_id:", customDeviceId);
-
-  // Step 2: 替换 $device_id 的逻辑
-  function replaceMixpanelDeviceId() {
-    if (window.CEPMixpanel && window.CEPMixpanel.cookie && window.CEPMixpanel.cookie.props) {
-      // 覆盖 $device_id
-      window.CEPMixpanel.cookie.props.$device_id = customDeviceId;
-
-      // 触发 identify 更新 distinct_id
-      window.CEPMixpanel.identify(customDeviceId);
-
-      console.log("Replaced Mixpanel $device_id with:", customDeviceId);
-    } else {
-      console.warn("CEPMixpanel not ready, retrying...");
-      setTimeout(replaceMixpanelDeviceId, 100); // 每 100ms 重试
-    }
-  }
-
-  // Step 3: 等待 SDK 初始化完成后替换 $device_id
-  document.addEventListener("DOMContentLoaded", function () {
-    // 确保在初始化完成后执行
-    if (window.CEPMixpanel && typeof window.CEPMixpanel.onInitComplete === "function") {
-      window.CEPMixpanel.onInitComplete(replaceMixpanelDeviceId);
-    } else {
-      console.log("Fallback to retry mechanism...");
-      replaceMixpanelDeviceId(); // 如果 onInitComplete 未触发，使用轮询重试
-    }
-  });
-</script>
-
-<!-- Start Alta SDK -->
-<script src="https://chat.alta-di.com/initQuickChat.js?platform=shopify&accessId=6faf4ed6-df62-4345-bef9-d49c089fd6f6&oemFlag=OEM" async></script>
-<!-- End Alta SDK -->
+  <!-- Start Alta SDK -->
+  <script src="https://raw.githubusercontent.com/Alta-DI/Alta-DI/refs/heads/main/js/initQuickChat.js?platform=shopify&accessId=6faf4ed6-df62-4345-bef9-d49c089fd6f6&oemFlag=OEM" async></script>
+  <!-- End Alta SDK -->
 
   
   <title>
