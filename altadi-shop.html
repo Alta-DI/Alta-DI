@@ -14,45 +14,48 @@
   <link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
 
   <!-- 測試跨網域追蹤 -->
-  <script>
-  function getcustomDeviceId() {
-  const newDeviceId = "USER_" + Date.now();
-  sessionStorage.setItem("custom_device_id", newDeviceId);
-  return newDeviceId;
+<script>
+  // Step 1: 获取或生成自定义的 `$device_id`
+  function getCustomDeviceId() {
+    // 使用时间戳生成自定义 Device ID
+    const newDeviceId = "USER_" + Date.now();
+    sessionStorage.setItem("custom_device_id", newDeviceId); // 存储到 sessionStorage
+    return newDeviceId;
   }
-  const customDeviceId = getCustomUserId();
+
+  const customDeviceId = getCustomDeviceId();
   console.log("Generated custom $device_id:", customDeviceId);
-    
-    // Step 2: 替换 Mixpanel 的 `$device_id`
-    document.addEventListener("DOMContentLoaded", function () {
-      function replaceMixpanelDeviceId() {
-        if (window.CEPMixpanel && window.CEPMixpanel.cookie && window.CEPMixpanel.cookie.props) {
-          // 替换默认 `$device_id`
-          window.CEPMixpanel.cookie.props.$device_id = customDeviceId;
 
-          // 设置 `distinct_id`，保持一致
-          window.CEPMixpanel.identify(customDeviceId);
+  // Step 2: 替换 Mixpanel 的 `$device_id`
+  document.addEventListener("DOMContentLoaded", function () {
+    function replaceMixpanelDeviceId() {
+      if (window.CEPMixpanel && window.CEPMixpanel.cookie && window.CEPMixpanel.cookie.props) {
+        // 替换默认 `$device_id`
+        window.CEPMixpanel.cookie.props.$device_id = customDeviceId;
 
-          console.log("Replaced Mixpanel $device_id and set distinct_id to:", customDeviceId);
-        } else {
-          console.error("CEPMixpanel is not initialized.");
-        }
-      }
+        // 设置 `distinct_id`，保持一致
+        window.CEPMixpanel.identify(customDeviceId);
 
-      // 等待 Mixpanel 初始化完成后执行替换
-      if (window.CEPMixpanel && typeof window.CEPMixpanel.onInitComplete === "function") {
-        window.CEPMixpanel.onInitComplete(replaceMixpanelDeviceId);
+        console.log("Replaced Mixpanel $device_id and set distinct_id to:", customDeviceId);
       } else {
-        console.error("CEPMixpanel initialization function not found.");
+        console.warn("CEPMixpanel not ready, retrying...");
+        setTimeout(replaceMixpanelDeviceId, 100); // 每 100ms 重试
       }
-    });
-  </script>
-  
-  </script>
-  
-  <!-- Start Alta SDK -->
-  <script src="https://chat.alta-di.com/initQuickChat.js?platform=shopify&accessId=6faf4ed6-df62-4345-bef9-d49c089fd6f6&oemFlag=OEM" async></script>
-  <!-- End Alta SDK -->
+    }
+
+    // 等待 Mixpanel 初始化完成
+    if (window.CEPMixpanel && typeof window.CEPMixpanel.onInitComplete === "function") {
+      window.CEPMixpanel.onInitComplete(replaceMixpanelDeviceId);
+    } else {
+      console.error("CEPMixpanel initialization function not found.");
+    }
+  });
+</script>
+
+<!-- Start Alta SDK -->
+<script src="https://chat.alta-di.com/initQuickChat.js?platform=shopify&accessId=6faf4ed6-df62-4345-bef9-d49c089fd6f6&oemFlag=OEM" async></script>
+<!-- End Alta SDK -->
+
   
   <title>
     Alta.DI
