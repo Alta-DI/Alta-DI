@@ -215,74 +215,97 @@
     }
 
     const sdk = new Proxy({}, {
-      get(_,prop){
-        if(window.quickChatApi && typeof window.quickChatApi[prop]==='function')
+      get(_, prop) {
+        if (window.quickChatApi && typeof window.quickChatApi[prop] === 'function')
           return window.quickChatApi[prop].bind(window.quickChatApi);
-        return (...args)=> console.log(`[SDK 模擬] ${prop}`, ...args);
+        return (...args) => console.log(`[SDK 模擬] ${prop}`, ...args);
       }
     });
 
-    let cart = JSON.parse(localStorage.getItem('demoCart')||'[]');
-    function saveCart(){ localStorage.setItem('demoCart', JSON.stringify(cart)); }
-    function calcSubtotal(){ return cart.reduce((sum,i)=>sum+i.price*i.qty,0); }
-    function renderCart(){
-      $('#cartItems').innerHTML = cart.map(i=>
-        `<li>${i.name} x${i.qty} <span>$${i.price*i.qty}</span></li>`).join('');
+    let cart = JSON.parse(localStorage.getItem('demoCart') || '[]');
+    function saveCart() { localStorage.setItem('demoCart', JSON.stringify(cart)); }
+    function calcSubtotal() { return cart.reduce((sum, i) => sum + i.price * i.qty, 0); }
+    function renderCart() {
+      $('#cartItems').innerHTML = cart.map(i =>
+        `<li>${i.name} x${i.qty} <span>$${i.price * i.qty}</span></li>`
+      ).join('');
       $('#cartSubtotal').textContent = `小計：$${calcSubtotal()}`;
-      $('#cartCount').textContent = cart.reduce((c,i)=>c+i.qty,0);
+      $('#cartCount').textContent = cart.reduce((c, i) => c + i.qty, 0);
       saveCart();
     }
 
-    $$('.addBtn').forEach(btn=> btn.onclick=e=>{
+    $$('.addBtn').forEach(btn => btn.onclick = e => {
       const card = e.target.closest('.card');
       const sku = card.dataset.sku;
-      const name= card.dataset.name;
-      const price= +card.dataset.price;
-      const f = cart.find(i=>i.sku===sku);
-      f? f.qty++ : cart.push({sku,name,price,qty:1});
-      renderCart(); toast('已加入購物車');
+      const name = card.dataset.name;
+      const price = +card.dataset.price;
+      const f = cart.find(i => i.sku === sku);
+      f ? f.qty++ : cart.push({ sku, name, price, qty: 1 });
+      renderCart();
+      toast('已加入購物車');
       // SDK: 加入購物車
-      sdk.track('SHOP_CART_ADD_SKU',{ sku,name,price });
+      sdk.track('SHOP_CART_ADD_SKU', { sku, name, price });
     });
 
-    $('#cartBtn').onclick=()=> $('#cartSidebar').classList.toggle('open');
+    $('#cartBtn').onclick = () => $('#cartSidebar').classList.toggle('open');
 
-    function toggleModal(id,open){
-      $(id).classList.toggle('show',open);
-      $('#overlay').classList.toggle('show',open);
+    function toggleModal(id, open) {
+      $(id).classList.toggle('show', open);
+      $('#overlay').classList.toggle('show', open);
     }
-    $('#loginBtn').onclick=()=> toggleModal('#loginModal',true);
-    $('#closeLogin').onclick=()=> toggleModal('#loginModal',false);
-    $('#loginForm').onsubmit=e=>{
+    $('#loginBtn').onclick = () => toggleModal('#loginModal', true);
+    $('#closeLogin').onclick = () => toggleModal('#loginModal', false);
+
+    // 登入成功後更新客戶屬性
+    $('#loginForm').onsubmit = e => {
       e.preventDefault();
-      localStorage.setItem('demoUser',$('#email').value);
-      toggleModal('#loginModal',false);
+      const email = $('#email').value;
+      localStorage.setItem('demoUser', email);
+      // 更新（新增）客戶屬性
+      if (window.quickChatApi && typeof quickChatApi.setContactProperties === 'function') {
+        quickChatApi.setContactProperties({ email });
+      }
+      toggleModal('#loginModal', false);
       toast('登入成功');
     };
 
-    $('#startCheckout').onclick=()=>{
-      if(!cart.length) return toast('購物車為空');
-      $('#checkoutList').innerHTML = cart.map(i=>
-        `<li>${i.name} x${i.qty} — $${i.price*i.qty}</li>`).join('');
+    $('#startCheckout').onclick = () => {
+      if (!cart.length) return toast('購物車為空');
+      $('#checkoutList').innerHTML = cart.map(i =>
+        `<li>${i.name} x${i.qty} — $${i.price * i.qty}</li>`
+      ).join('');
       $('#checkoutTotal').textContent = `總計：$${calcSubtotal()}`;
-      toggleModal('#checkoutModal',true);
+      toggleModal('#checkoutModal', true);
       // SDK: 開始結帳
-      sdk.track('SHOP_CHECKOUT_CREATE',{ items: cart.map(i=>({ sku:i.sku,name:i.name,price:i.price,qty:i.qty })), total:calcSubtotal() });
-    };
-    $('#cancelCheckout').onclick=()=>{
-      toggleModal('#checkoutModal',false);
-      // SDK: 放棄結帳
-      sdk.track('SHOP_CHECKOUT_CANCEL',{ cart: cart.map(i=>({ sku:i.sku,name:i.name,price:i.price,qty:i.qty })), total:calcSubtotal() });
-    };
-    $('#finishCheckout').onclick=()=>{
-      const email= localStorage.getItem('demoUser')||'guest@example.com';
-      sdk.identifyUser({ email }); // SDK: 關聯使用者
-      toast('結帳完成，感謝購買!');
-      toggleModal('#checkoutModal',false);
-      cart=[]; renderCart();
+      sdk.track('SHOP_CHECKOUT_CREATE', {
+        items: cart.map(i => ({ sku: i.sku, name: i.name, price: i.price, qty: i.qty })),
+        total: calcSubtotal()
+      });
     };
 
-    window.addEventListener('DOMContentLoaded',renderCart);
+    $('#cancelCheckout').onclick = () => {
+      toggleModal('#checkoutModal', false);
+      // SDK: 放棄結帳
+      sdk.track('SHOP_CHECKOUT_CANCEL', {
+        cart: cart.map(i => ({ sku: i.sku, name: i.name, price: i.price, qty: i.qty })),
+        total: calcSubtotal()
+      });
+    };
+
+    // 完成結帳：僅當已登入時才執行
+    $('#finishCheckout').onclick = () => {
+      const email = localStorage.getItem('demoUser');
+      if (!email) {
+        toast('請先登入');
+        return;
+      }
+      toast('結帳完成，感謝購買!');
+      toggleModal('#checkoutModal', false);
+      cart = [];
+      renderCart();
+    };
+
+    window.addEventListener('DOMContentLoaded', renderCart);
   </script>
 </body>
 </html>
