@@ -1,950 +1,288 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShopSmart - AI-Powered Shopping</title>
-    
-    <!-- LiveChat SDK Integration -->
-    <script src="https://achat.alta-di.com/initQuickChat.js?platform=others&accessId=7c1c993a-25c0-454e-a29c-c71d54b9c5d6&medium=demo&oemFlag=OEM" async></script>
-    
-    <style>
-        /* CSS Reset & Base Styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        /* Header Styles */
-        header {
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4a6de5;
-            display: flex;
-            align-items: center;
-        }
-        
-        .logo svg {
-            margin-right: 10px;
-        }
-        
-        nav ul {
-            display: flex;
-            list-style: none;
-        }
-        
-        nav ul li {
-            margin-left: 20px;
-        }
-        
-        nav ul li a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        
-        nav ul li a:hover {
-            color: #4a6de5;
-        }
-        
-        .header-actions {
-            display: flex;
-            align-items: center;
-        }
-        
-        .btn {
-            background-color: #4a6de5;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
-        
-        .btn:hover {
-            background-color: #3a5bd5;
-        }
-        
-        .btn-outline {
-            background-color: transparent;
-            border: 1px solid #4a6de5;
-            color: #4a6de5;
-        }
-        
-        .btn-outline:hover {
-            background-color: #f0f3ff;
-        }
-        
-        .cart-btn {
-            margin-left: 15px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-        }
-        
-        .cart-count {
-            background-color: #ff6b6b;
-            color: white;
-            font-size: 12px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-left: 5px;
-        }
-        
-        /* Main Content Styles */
-        main {
-            padding: 40px 0;
-        }
-        
-        .page-title {
-            font-size: 28px;
-            margin-bottom: 30px;
-            color: #333;
-            text-align: center;
-        }
-        
-        /* Product Grid */
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 30px;
-        }
-        
-        .product-card {
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-        }
-        
-        .product-image {
-            height: 200px;
-            width: 100%;
-            object-fit: cover;
-        }
-        
-        .product-info {
-            padding: 15px;
-        }
-        
-        .product-name {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
-        .product-price {
-            font-size: 20px;
-            color: #4a6de5;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-        
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal {
-            background-color: white;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            padding: 30px;
-            transform: translateY(-20px);
-            transition: transform 0.3s;
-        }
-        
-        .modal-overlay.active .modal {
-            transform: translateY(0);
-        }
-        
-        .modal-title {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-        
-        /* Cart Sidebar */
-        .cart-sidebar {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 100%;
-            max-width: 400px;
-            height: 100%;
-            background-color: white;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
-            z-index: 200;
-            transition: right 0.3s;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .cart-sidebar.active {
-            right: 0;
-        }
-        
-        .cart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .cart-header h2 {
-            font-size: 24px;
-            color: #333;
-        }
-        
-        .close-cart {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-        
-        .cart-items {
-            flex: 1;
-            overflow-y: auto;
-        }
-        
-        .cart-item {
-            display: flex;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .cart-item-image {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-right: 15px;
-        }
-        
-        .cart-item-info {
-            flex: 1;
-        }
-        
-        .cart-item-name {
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
-        
-        .cart-item-price {
-            color: #4a6de5;
-            font-weight: 600;
-        }
-        
-        .cart-item-actions {
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-        }
-        
-        .quantity-btn {
-            width: 30px;
-            height: 30px;
-            background-color: #eee;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        
-        .cart-item-quantity {
-            margin: 0 10px;
-            font-weight: 500;
-        }
-        
-        .remove-item {
-            color: #ff6b6b;
-            background: none;
-            border: none;
-            cursor: pointer;
-            margin-left: auto;
-        }
-        
-        .cart-footer {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-        
-        .cart-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        
-        .empty-cart-message {
-            text-align: center;
-            padding: 30px 0;
-            color: #999;
-        }
-        
-        /* Checkout Modal */
-        .checkout-items {
-            margin-bottom: 20px;
-        }
-        
-        .checkout-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .checkout-total {
-            font-size: 20px;
-            font-weight: 600;
-            text-align: right;
-            margin: 20px 0;
-        }
-        
-        /* Confirmation Message */
-        .confirmation-message {
-            text-align: center;
-            padding: 20px 0;
-        }
-        
-        .confirmation-icon {
-            color: #4caf50;
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-        
-        /* Responsive Styles */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                padding: 15px;
-            }
-            
-            .logo {
-                margin-bottom: 15px;
-            }
-            
-            nav ul {
-                margin-bottom: 15px;
-            }
-            
-            nav ul li {
-                margin-left: 15px;
-                margin-right: 15px;
-            }
-            
-            .product-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 20px;
-            }
-            
-            .cart-sidebar {
-                width: 100%;
-                max-width: 100%;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .product-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .modal {
-                padding: 20px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Shop</title>
+
+  <!-- ✦✦  Enhanced Inline CSS  ✦✦ -->
+  <style>
+    :root {
+      --color-primary: #0070f3;
+      --color-secondary: #1c1c1e;
+      --color-accent: #ff4081;
+      --color-light: #f7fafc;
+      --color-dark: #333;
+      --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+      --transition-fast: 0.2s ease;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif;
+      background: var(--color-light);
+      color: var(--color-dark);
+      line-height: 1.6;
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem; background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+      color: #fff; box-shadow: var(--shadow-soft);
+    }
+    header h1 { font-size: 1.5rem; letter-spacing: 1px; }
+    nav a {
+      margin-left: 1.5rem; color: #fff; text-decoration: none; font-weight: 500;
+      position: relative;
+    }
+    nav a::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+      background: #fff; transition: width var(--transition-fast);
+    }
+    nav a:hover::after { width: 100%; }
+    main { padding: 2rem; max-width: 1200px; margin: auto; }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 2rem;
+    }
+    .card {
+      background: #fff; border-radius: 1rem; overflow: hidden;
+      box-shadow: var(--shadow-soft); transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+    .card img {
+      width: 100%; height: 180px; object-fit: cover;
+    }
+    .card-content { padding: 1rem; }
+    .card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .price { color: var(--color-accent); font-weight: 700; margin-bottom: 1rem; }
+    button {
+      display: inline-block; padding: 0.6rem 1.2rem; font-size: 0.95rem;
+      color: #fff; background: var(--color-primary); border: none;
+      border-radius: 0.5rem; cursor: pointer; transition: background var(--transition-fast);
+    }
+    button:hover { background: #0059c1; }
+
+    /* Cart Sidebar */
+    #cartSidebar {
+      position: fixed; top: 0; right: 0; width: 340px; height: 100%;
+      background: #fff; box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+      transform: translateX(100%); transition: transform 0.3s;
+      display: flex; flex-direction: column; z-index: 1000;
+    }
+    #cartSidebar.open { transform: translateX(0); }
+    #cartSidebar header {
+      background: var(--color-secondary); color: #fff;
+      padding: 1.2rem; font-size: 1.2rem; text-align: center;
+    }
+    #cartItems { flex: 1; overflow-y: auto; list-style: none; padding: 1rem; }
+    #cartItems li {
+      display: flex; justify-content: space-between; padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    #cartSubtotal { padding: 1rem; font-weight: 700; text-align: right; }
+    #cartSidebar footer { padding: 1rem; }
+    #startCheckout { width: 100%; }
+
+    /* Modals */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5);
+      opacity: 0; visibility: hidden; transition: opacity 0.2s;
+      backdrop-filter: blur(2px); z-index: 900;
+    }
+    .overlay.show { opacity: 1; visibility: visible; }
+    .modal {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+      background: #fff; width: 90%; max-width: 400px; border-radius: 1rem;
+      box-shadow: var(--shadow-soft); padding: 2rem;
+      opacity: 0; visibility: hidden; transition: all 0.2s;
+      z-index: 950;
+    }
+    .modal.show { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+    .modal h2 { margin-bottom: 1rem; text-align: center; font-size: 1.3rem; }
+    .modal form { display: flex; flex-direction: column; }
+    .modal input {
+      margin-bottom: 1rem; padding: 0.6rem; border: 1px solid #ccc;
+      border-radius: 0.5rem; font-size: 0.95rem;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; }
+    .modal-actions button { background: var(--color-accent); }
+    .modal-actions button:hover { background: #e73370; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      background: var(--color-primary); color: #fff;
+      padding: 0.8rem 1.5rem; border-radius: 1rem;
+      box-shadow: var(--shadow-soft); opacity: 0; visibility: hidden;
+      transition: opacity 0.2s;
+      z-index: 1100;
+    }
+    #toast.show { opacity: 1; visibility: visible; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      header { flex-direction: column; padding: 1rem; }
+      nav { width: 100%; display: flex; justify-content: space-between; }
+      .grid { grid-template-columns: 1fr; }
+      #cartSidebar { width: 100%; }
+    }
+  </style>
+
+  <!-- ✦✦  LiveChat SDK  ✦✦ -->
+  <script src="https://achat.alta-di.com/initQuickChat.js?platform=others&accessId=7c1c993a-25c0-454e-a29c-c71d54b9c5d6&medium=demo&oemFlag=OEM" async></script>
 </head>
 <body>
-    <!-- Header Section -->
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.7 16H19" stroke="#4a6de5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="8.5" cy="19.5" r="1.5" stroke="#4a6de5" stroke-width="2"/>
-                        <circle cx="17.5" cy="19.5" r="1.5" stroke="#4a6de5" stroke-width="2"/>
-                    </svg>
-                    ShopSmart
-                </div>
-                <nav>
-                    <ul>
-                        <li><a href="#" class="active">Home</a></li>
-                        <li><a href="#">Products</a></li>
-                        <li><a href="#">Deals</a></li>
-                        <li><a href="#">About</a></li>
-                    </ul>
-                </nav>
-                <div class="header-actions">
-                    <button id="login-btn" class="btn btn-outline">Login</button>
-                    <div id="cart-btn" class="cart-btn">
-                        <span>My Cart</span>
-                        <div id="cart-count" class="cart-count">0</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+  <header>
+    <h1>Demo Shop</h1>
+    <nav>
+      <a id="loginBtn">登入</a>
+      <a id="cartBtn">購物車 <span id="cartCount" class="badge">0</span></a>
+    </nav>
+  </header>
 
-    <!-- Main Content -->
-    <main>
-        <div class="container">
-            <h1 class="page-title">Featured Products</h1>
-            
-            <div class="product-grid">
-                <!-- Product 1 -->
-                <div class="product-card" data-id="p001">
-                    <img src="/api/placeholder/400/320" alt="Wireless Headphones" class="product-image">
-                    <div class="product-info">
-                        <h3 class="product-name">Premium Wireless Headphones</h3>
-                        <div class="product-price">$149.99</div>
-                        <button class="btn add-to-cart-btn">Add to Cart</button>
-                    </div>
-                </div>
-                
-                <!-- Product 2 -->
-                <div class="product-card" data-id="p002">
-                    <img src="/api/placeholder/400/320" alt="Smart Watch" class="product-image">
-                    <div class="product-info">
-                        <h3 class="product-name">Smart Watch Pro</h3>
-                        <div class="product-price">$299.99</div>
-                        <button class="btn add-to-cart-btn">Add to Cart</button>
-                    </div>
-                </div>
-                
-                <!-- Product 3 -->
-                <div class="product-card" data-id="p003">
-                    <img src="/api/placeholder/400/320" alt="Bluetooth Speaker" class="product-image">
-                    <div class="product-info">
-                        <h3 class="product-name">Portable Bluetooth Speaker</h3>
-                        <div class="product-price">$79.99</div>
-                        <button class="btn add-to-cart-btn">Add to Cart</button>
-                    </div>
-                </div>
-                
-                <!-- Product 4 -->
-                <div class="product-card" data-id="p004">
-                    <img src="/api/placeholder/400/320" alt="Wireless Earbuds" class="product-image">
-                    <div class="product-info">
-                        <h3 class="product-name">True Wireless Earbuds</h3>
-                        <div class="product-price">$129.99</div>
-                        <button class="btn add-to-cart-btn">Add to Cart</button>
-                    </div>
-                </div>
-            </div>
+  <main>
+    <section class="grid" id="productGrid">
+      <div class="card" data-sku="sku001" data-name="經典帆布包" data-price="1290">
+        <img src="https://picsum.photos/seed/bag/400/300" alt="經典帆布包">
+        <div class="card-content">
+          <h3>經典帆布包</h3>
+          <p class="price">$1,290</p>
+          <button class="addBtn">加入購物車</button>
         </div>
-    </main>
+      </div>
+      <div class="card" data-sku="sku002" data-name="保溫隨行杯" data-price="890">
+        <img src="https://picsum.photos/seed/cup/400/300" alt="保溫隨行杯">
+        <div class="card-content">
+          <h3>保溫隨行杯</h3>
+          <p class="price">$890</p>
+          <button class="addBtn">加入購物車</button>
+        </div>
+      </div>
+      <div class="card" data-sku="sku003" data-name="極簡腕錶" data-price="3290">
+        <img src="https://picsum.photos/seed/watch/400/300" alt="極簡腕錶">
+        <div class="card-content">
+          <h3>極簡腕錶</h3>
+          <p class="price">$3,290</p>
+          <button class="addBtn">加入購物車</button>
+        </div>
+      </div>
+    </section>
+  </main>
 
-    <!-- Login Modal -->
-    <div id="login-modal" class="modal-overlay">
-        <div class="modal">
-            <button class="close-btn">&times;</button>
-            <h2 class="modal-title">Login to Your Account</h2>
-            
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required>
-                </div>
-                
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline close-modal">Cancel</button>
-                    <button type="submit" class="btn">Login</button>
-                </div>
-            </form>
-        </div>
+  <aside id="cartSidebar">
+    <header>購物車明細</header>
+    <ul id="cartItems"></ul>
+    <p id="cartSubtotal">小計：$0</p>
+    <footer><button id="startCheckout">開始結帳</button></footer>
+  </aside>
+
+  <div id="overlay" class="overlay"></div>
+
+  <div id="loginModal" class="modal">
+    <h2>會員登入</h2>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="E-mail" required>
+      <input type="password" id="password" placeholder="密碼" required>
+      <div class="modal-actions">
+        <button type="button" id="closeLogin">取消</button>
+        <button type="submit">登入</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="checkoutModal" class="modal">
+    <h2>結帳明細</h2>
+    <ul id="checkoutList"></ul>
+    <p id="checkoutTotal"></p>
+    <div class="modal-actions">
+      <button id="cancelCheckout">取消</button>
+      <button id="finishCheckout">完成結帳</button>
     </div>
+  </div>
 
-    <!-- Cart Sidebar -->
-    <div id="cart-sidebar" class="cart-sidebar">
-        <div class="cart-header">
-            <h2>Shopping Cart</h2>
-            <button class="close-cart">&times;</button>
-        </div>
-        
-        <div id="cart-items" class="cart-items">
-            <!-- Cart items will be dynamically added here -->
-            <div class="empty-cart-message">Your cart is empty</div>
-        </div>
-        
-        <div class="cart-footer">
-            <div class="cart-total">
-                <span>Total:</span>
-                <span id="cart-total-amount">$0.00</span>
-            </div>
-            <button id="checkout-btn" class="btn">Start Checkout</button>
-        </div>
-    </div>
+  <div id="toast">操作成功</div>
 
-    <!-- Checkout Modal -->
-    <div id="checkout-modal" class="modal-overlay">
-        <div class="modal">
-            <button class="close-btn">&times;</button>
-            <h2 class="modal-title">Checkout</h2>
-            
-            <div id="checkout-items" class="checkout-items">
-                <!-- Checkout items will be dynamically added here -->
-            </div>
-            
-            <div id="checkout-total" class="checkout-total">
-                Total: $0.00
-            </div>
-            
-            <div class="modal-actions">
-                <button id="cancel-checkout-btn" class="btn btn-outline">Cancel</button>
-                <button id="finish-checkout-btn" class="btn">Finish Checkout</button>
-            </div>
-        </div>
-    </div>
+  <script>
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+    const toastEl = $('#toast');
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(()=> toastEl.classList.remove('show'), 2000);
+    }
 
-    <!-- Confirmation Modal -->
-    <div id="confirmation-modal" class="modal-overlay">
-        <div class="modal">
-            <h2 class="modal-title">Order Confirmed!</h2>
-            
-            <div class="confirmation-message">
-                <div class="confirmation-icon">✓</div>
-                <p>Thank you for your purchase. Your order has been placed successfully.</p>
-            </div>
-            
-            <div class="modal-actions">
-                <button class="btn close-modal">Continue Shopping</button>
-            </div>
-        </div>
-    </div>
+    const sdk = new Proxy({}, {
+      get(_,prop){
+        if(window.quickChatApi && typeof window.quickChatApi[prop]==='function')
+          return window.quickChatApi[prop].bind(window.quickChatApi);
+        return (...args)=> console.log(`[SDK 模擬] ${prop}`, ...args);
+      }
+    });
 
-    <script>
-        // Product data
-        const products = [
-            {
-                id: 'p001',
-                name: 'Premium Wireless Headphones',
-                price: 149.99,
-                image: '/api/placeholder/400/320'
-            },
-            {
-                id: 'p002',
-                name: 'Smart Watch Pro',
-                price: 299.99,
-                image: '/api/placeholder/400/320'
-            },
-            {
-                id: 'p003',
-                name: 'Portable Bluetooth Speaker',
-                price: 79.99,
-                image: '/api/placeholder/400/320'
-            },
-            {
-                id: 'p004',
-                name: 'True Wireless Earbuds',
-                price: 129.99,
-                image: '/api/placeholder/400/320'
-            }
-        ];
+    let cart = JSON.parse(localStorage.getItem('demoCart')||'[]');
+    function saveCart(){ localStorage.setItem('demoCart', JSON.stringify(cart)); }
+    function calcSubtotal(){ return cart.reduce((sum,i)=>sum+i.price*i.qty,0); }
+    function renderCart(){
+      $('#cartItems').innerHTML = cart.map(i=>
+        `<li>${i.name} x${i.qty} <span>$${i.price*i.qty}</span></li>`).join('');
+      $('#cartSubtotal').textContent = `小計：$${calcSubtotal()}`;
+      $('#cartCount').textContent = cart.reduce((c,i)=>c+i.qty,0);
+      saveCart();
+    }
 
-        // DOM Elements
-        const loginBtn = document.getElementById('login-btn');
-        const loginModal = document.getElementById('login-modal');
-        const loginForm = document.getElementById('login-form');
-        const cartBtn = document.getElementById('cart-btn');
-        const cartSidebar = document.getElementById('cart-sidebar');
-        const cartItemsContainer = document.getElementById('cart-items');
-        const cartTotalAmount = document.getElementById('cart-total-amount');
-        const cartCountElement = document.getElementById('cart-count');
-        const checkoutBtn = document.getElementById('checkout-btn');
-        const checkoutModal = document.getElementById('checkout-modal');
-        const checkoutItemsContainer = document.getElementById('checkout-items');
-        const checkoutTotalElement = document.getElementById('checkout-total');
-        const cancelCheckoutBtn = document.getElementById('cancel-checkout-btn');
-        const finishCheckoutBtn = document.getElementById('finish-checkout-btn');
-        const confirmationModal = document.getElementById('confirmation-modal');
-        const addToCartBtns = document.querySelectorAll('.add-to-cart-btn');
-        const closeBtns = document.querySelectorAll('.close-btn, .close-modal');
-        const closeCartBtn = document.querySelector('.close-cart');
+    $$('.addBtn').forEach(btn=> btn.onclick=e=>{
+      const card = e.target.closest('.card');
+      const sku = card.dataset.sku;
+      const name= card.dataset.name;
+      const price= +card.dataset.price;
+      const f = cart.find(i=>i.sku===sku);
+      f? f.qty++ : cart.push({sku,name,price,qty:1});
+      renderCart(); toast('已加入購物車');
+      // SDK: 加入購物車
+      sdk.track('SHOP_CART_ADD_SKU',{ sku,name,price });
+    });
 
-        // Cart state
-        let cart = [];
-        let loggedInUser = null;
-        let checkoutToken = generateToken();
+    $('#cartBtn').onclick=()=> $('#cartSidebar').classList.toggle('open');
 
-        // Initialize the application
-        function init() {
-            loadCartFromLocalStorage();
-            updateCartUI();
-            setupEventListeners();
-        }
+    function toggleModal(id,open){
+      $(id).classList.toggle('show',open);
+      $('#overlay').classList.toggle('show',open);
+    }
+    $('#loginBtn').onclick=()=> toggleModal('#loginModal',true);
+    $('#closeLogin').onclick=()=> toggleModal('#loginModal',false);
+    $('#loginForm').onsubmit=e=>{
+      e.preventDefault();
+      localStorage.setItem('demoUser',$('#email').value);
+      toggleModal('#loginModal',false);
+      toast('登入成功');
+    };
 
-        // Setup Event Listeners
-        function setupEventListeners() {
-            // Login Button Click
-            loginBtn.addEventListener('click', () => {
-                loginModal.classList.add('active');
-            });
+    $('#startCheckout').onclick=()=>{
+      if(!cart.length) return toast('購物車為空');
+      $('#checkoutList').innerHTML = cart.map(i=>
+        `<li>${i.name} x${i.qty} — $${i.price*i.qty}</li>`).join('');
+      $('#checkoutTotal').textContent = `總計：$${calcSubtotal()}`;
+      toggleModal('#checkoutModal',true);
+      // SDK: 開始結帳
+      sdk.track('SHOP_CHECKOUT_CREATE',{ items: cart.map(i=>({ sku:i.sku,name:i.name,price:i.price,qty:i.qty })), total:calcSubtotal() });
+    };
+    $('#cancelCheckout').onclick=()=>{
+      toggleModal('#checkoutModal',false);
+      // SDK: 放棄結帳
+      sdk.track('SHOP_CHECKOUT_CANCEL',{ cart: cart.map(i=>({ sku:i.sku,name:i.name,price:i.price,qty:i.qty })), total:calcSubtotal() });
+    };
+    $('#finishCheckout').onclick=()=>{
+      const email= localStorage.getItem('demoUser')||'guest@example.com';
+      sdk.identifyUser({ email }); // SDK: 關聯使用者
+      toast('結帳完成，感謝購買!');
+      toggleModal('#checkoutModal',false);
+      cart=[]; renderCart();
+    };
 
-            // Login Form Submit
-            loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                simulateLogin();
-            });
-
-            // Cart Button Click
-            cartBtn.addEventListener('click', () => {
-                cartSidebar.classList.add('active');
-            });
-
-            // Close Cart Button Click
-            closeCartBtn.addEventListener('click', () => {
-                cartSidebar.classList.remove('active');
-            });
-
-            // Add To Cart Buttons Click
-            addToCartBtns.forEach(btn => {
-                btn.addEventListener('click', handleAddToCart);
-            });
-
-            // Close Buttons Click
-            closeBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.modal-overlay.active').forEach(modal => {
-                        modal.classList.remove('active');
-                    });
-                });
-            });
-
-            // Checkout Button Click
-            checkoutBtn.addEventListener('click', startCheckout);
-
-            // Cancel Checkout Button Click
-            cancelCheckoutBtn.addEventListener('click', cancelCheckout);
-
-            // Finish Checkout Button Click
-            finishCheckoutBtn.addEventListener('click', finishCheckout);
-        }
-
-        // Handle Add to Cart
-        function handleAddToCart(e) {
-            const productCard = e.target.closest('.product-card');
-            const productId = productCard.dataset.id;
-            const product = products.find(p => p.id === productId);
-            
-            // Check if product already exists in cart
-            const existingCartItem = cart.find(item => item.id === productId);
-            
-            if (existingCartItem) {
-                existingCartItem.quantity += 1;
-            } else {
-                cart.push({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    image: product.image,
-                    quantity: 1
-                });
-            }
-            
-            // Update UI and save to localStorage
-            updateCartUI();
-            saveCartToLocalStorage();
-            
-            // Track add to cart event with LiveChat SDK
-            // IMPORTANT: SDK Event for adding product to cart
-            if (window.quickChatApi) {
-                quickChatApi.track('SHOP_CART_ADD_SKU', {
-                    sku: product.id,
-                    name: product.name,
-                    price: product.price
-                });
-                console.log("Product added to cart event tracked:", product.name);
-            }
-        }
-
-        // Update Cart Quantity
-        function updateCartQuantity(productId, change) {
-            const cartItemIndex = cart.findIndex(item => item.id === productId);
-            
-            if (cartItemIndex !== -1) {
-                cart[cartItemIndex].quantity += change;
-                
-                if (cart[cartItemIndex].quantity <= 0) {
-                    cart.splice(cartItemIndex, 1);
-                }
-                
-                updateCartUI();
-                saveCartToLocalStorage();
-            }
-        }
-
-        // Remove item from cart
-        function removeCartItem(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            updateCartUI();
-            saveCartToLocalStorage();
-        }
-
-        // Update Cart UI
-        function updateCartUI() {
-            // Update cart count
-            const totalQuantity = cart.reduce((total, item) => total + item.quantity, 0);
-            cartCountElement.textContent = totalQuantity;
-            
-            // Update cart items
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<div class="empty-cart-message">Your cart is empty</div>';
-                checkoutBtn.disabled = true;
-                checkoutBtn.classList.add('btn-outline');
-            } else {
-                cartItemsContainer.innerHTML = '';
-                cart.forEach(item => {
-                    const cartItemElement = document.createElement('div');
-                    cartItemElement.className = 'cart-item';
-                    cartItemElement.innerHTML = `
-                        <img src="${item.image}" alt="${item.name}" class="cart-item-image">
-                        <div class="cart-item-info">
-                            <div class="cart-item-name">${item.name}</div>
-                            <div class="cart-item-price">$${item.price.toFixed(2)}</div>
-                            <div class="cart-item-actions">
-                                <button class="quantity-btn decrease-quantity" data-id="${item.id}">-</button>
-                                <span class="cart-item-quantity">${item.quantity}</span>
-                                <button class="quantity-btn increase-quantity" data-id="${item.id}">+</button>
-                                <button class="remove-item" data-id="${item.id}">Remove</button>
-                            </div>
-                        </div>
-                    `;
-                    cartItemsContainer.appendChild(cartItemElement);
-                });
-                
-                // Add event listeners for quantity buttons
-                document.querySelectorAll('.decrease-quantity').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        updateCartQuantity(e.target.dataset.id, -1);
-                    });
-                });
-                
-                document.querySelectorAll('.increase-quantity').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        updateCartQuantity(e.target.dataset.id, 1);
-                    });
-                });
-                
-                document.querySelectorAll('.remove-item').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        removeCartItem(e.target.dataset.id);
-                    });
-                });
-                
-                checkoutBtn.disabled = false;
-                checkoutBtn.classList.remove('btn-outline');
-            }
-            
-            // Update total amount
-            const totalAmount = calculateTotal();
-            cartTotalAmount.textContent = `$${totalAmount.toFixed(2)}`;
-        }
-
-        // Calculate total cart amount
-        function calculateTotal() {
-            return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-        }
-
-        // Save cart to localStorage
-        function saveCartToLocalStorage() {
-            localStorage.setItem('shoppingCart', JSON.stringify(cart));
-        }
-
-        // Load cart from localStorage
-        function loadCartFromLocalStorage() {
-            const savedCart = localStorage.getItem('shoppingCart');
-            if (savedCart) {
-                cart = JSON.parse(savedCart);
-            }
-        }
-
-        // Simulate login process
-        function simulateLogin() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Simple validation
-            if (email && password) {
-                loggedInUser = {
-                    email: email,
-                    userId: 'user_' + Math.random().toString(36).substr(2, 9)
-                };
-                
-                // Update UI
-                loginBtn.textContent = 'My Account';
-                loginModal.classList.remove('active');
-                
-                // Show success message
-                alert('Login successful!');
-            }
-        }
-
-        // Start checkout process
-        function startCheckout() {
-            // Prepare checkout items
-            checkoutItemsContainer.innerHTML = '';
-            cart.forEach(item => {
-                const checkoutItem = document.createElement('div');
-                checkoutItem.className = 'checkout-item';
-                checkoutItem.innerHTML = `
-                    <div>${item.name} x ${item.quantity}</div>
-                    <div>$${(item.price * item.quantity).toFixed(2)}</div>
-                `;
-                checkoutItemsContainer.appendChild(checkoutItem);
-            });
-            
-            // Update total
-            const totalAmount = calculateTotal();
-            checkoutTotalElement.textContent = `Total: $${totalAmount.toFixed(2)}`;
-            
-            // Show checkout modal
-            checkoutModal.classList.add('active');
-            cartSidebar.classList.remove('active');
-            
-            // Track checkout creation event with LiveChat SDK
-            // IMPORTANT: SDK Event for starting checkout
-            if (window.quickChatApi) {
-                const orderData = {
-                    $checkoutToken: checkoutToken,
-                    items: cart.map(item => ({
-                        sku: item.id,
-                        name: item.name,
-                        price: item.price,
-                        quantity: item.quantity
-                    })),
-                    total: totalAmount
-                };
-                
-                quickChatApi.track('SHOP_CHECKOUT_CREATE', orderData);
-                console.log("Checkout created event tracked:", orderData);
-            }
-        }
-
-        // Cancel checkout process
-        function cancelCheckout() {
-            checkoutModal.classList.remove('active');
-            
-            // Track checkout cancellation event with LiveChat SDK
-            // IMPORTANT: SDK Event for canceling checkout
-            if (window.quickChatApi) {
-                const cancelData = {
-                    $checkoutToken: checkoutToken,
-                    cart: cart.map(item => ({
-                        sku: item.id,
-                        name: item.name,
-                        price: item.price,
-                        quantity: item.quantity
-                    }
+    window.addEventListener('DOMContentLoaded',renderCart);
+  </script>
+</body>
+</html>
