@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 旅遊助理 - 自定義行程嵌入</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .chat-frame-container {
+            height: calc(100vh - 180px);
+            min-height: 500px;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+        /* 自定義捲軸 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="text-slate-900 antialiased">
+
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-2">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">🤖</span>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">AI 智能行程配置系統</h1>
+                    <p class="text-indigo-200 text-xs">動態自定義變數測試工具</p>
+                </div>
+            </div>
+            <div class="text-xs bg-indigo-800/50 px-3 py-1 rounded-full border border-indigo-400/30 font-mono">
+                靈活配置模式
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left: Config Form -->
+            <div class="lg:col-span-4 space-y-4">
+                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-y-auto max-h-[calc(100vh-140px)]">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-indigo-700 border-b pb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        參數與網址設定
+                    </h2>
+                    
+                    <form id="configForm" class="space-y-4 text-sm">
+                        <!-- Base URL Configuration -->
+                        <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                            <label class="block text-indigo-700 font-bold mb-1">助理基礎網址 (Iframe URL)</label>
+                            <input type="text" id="base_url" value="https://altatech.ai/widget/eezuywwgybk5ybgbmbjgeml/chat.html"
+                                placeholder="請輸入 altatech.ai 助理網址"
+                                class="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg transition-all font-mono text-xs">
+                        </div>
+
+                        <!-- Email -->
+                        <div>
+                            <label class="block text-slate-500 font-medium mb-1">用戶 Email</label>
+                            <input type="email" id="email" value="test@example.com"
+                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all">
+                        </div>
+
+                        <!-- Destination -->
+                        <div>
+                            <label class="block text-slate-500 font-medium mb-1">目的地機場</label>
+                            <input type="text" id="var_destination_airport_zh" value="大阪關西國際機場"
+                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all">
+                        </div>
+
+                        <!-- Times -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-slate-500 font-medium mb-1 text-xs">到達時間</label>
+                                <input type="datetime-local" id="var_arrival_local_time" value="2026-10-21T12:30"
+                                    class="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-slate-500 font-medium mb-1 text-xs">離開時間</label>
+                                <input type="datetime-local" id="var_departure_local_time" value="2026-10-31T20:40"
+                                    class="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all text-xs">
+                            </div>
+                        </div>
+
+                        <!-- Pax Count -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-slate-500 font-medium mb-1 text-xs">成人人數</label>
+                                <input type="number" id="var_adult_count" value="2"
+                                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-slate-500 font-medium mb-1 text-xs">兒童人數</label>
+                                <input type="number" id="var_child_count" value="1"
+                                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Hotels JSON -->
+                        <div class="pt-2 border-t border-slate-100">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-indigo-700 font-bold">飯店清單 (var_hotel)</label>
+                                <span id="jsonStatus" class="text-[10px] px-2 py-0.5 rounded bg-green-100 text-green-700 font-bold uppercase">Valid JSON</span>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mb-2">提示：AI 建議使用壓縮後的 JSON 以避免網址過長</p>
+                            <textarea id="var_hotel" rows="8" 
+                                class="w-full px-3 py-2 bg-slate-900 text-green-400 border border-slate-700 rounded-lg transition-all font-mono text-[11px] leading-relaxed">[
+  {
+    "CheckInDate": "2026-10-21",
+    "CheckOutDate": "2026-10-24",
+    "HotelName": "大阪難波東急STAY飯店 (Tokyu Stay Namba Premium)",
+    "HotelAddress": "542-0076 大阪府大阪市中央區難波3-2-1"
+  }
+]</textarea>
+                        </div>
+
+                        <button type="button" onclick="updateIframe()" 
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-indigo-200 flex justify-center items-center gap-2 mt-2">
+                            <span>🚀</span> 更新行程並啟動助理
+                        </button>
+                    </form>
+                </section>
+            </div>
+
+            <!-- Right: Chatbot -->
+            <div class="lg:col-span-8">
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col chat-frame-container">
+                    <!-- Status Bar -->
+                    <div class="bg-slate-50 px-6 py-3 border-b border-slate-200 flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2">
+                                <div id="statusDot" class="w-2.5 h-2.5 bg-slate-400 rounded-full"></div>
+                                <span id="statusText" class="text-xs font-bold text-slate-600 uppercase tracking-widest">Assistant Idle</span>
+                            </div>
+                            <!-- URL Length Counter -->
+                            <div id="urlCounter" class="hidden md:flex items-center gap-2 text-[10px] px-2 py-1 bg-slate-200 rounded border border-slate-300">
+                                <span class="text-slate-500">URL Length:</span>
+                                <span id="charCount" class="font-bold">0</span>
+                                <span id="lengthWarning" class="hidden text-amber-600 font-bold">⚠️ 極限</span>
+                            </div>
+                        </div>
+                        <div id="urlPreview" class="hidden md:block text-[10px] text-slate-400 font-mono truncate max-w-sm">
+                            等待初始化...
+                        </div>
+                    </div>
+                    
+                    <!-- Iframe Container -->
+                    <div class="flex-grow relative bg-slate-100" id="chatWrapper">
+                        <!-- Loading State -->
+                        <div id="loading" class="absolute inset-0 flex items-center justify-center bg-white z-20 hidden">
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+                                <p class="mt-4 text-slate-500 text-sm font-medium">正在壓縮並載入行程...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Placeholder -->
+                        <div id="placeholder" class="absolute inset-0 flex items-center justify-center bg-slate-50 text-center p-8 z-10">
+                            <div class="max-w-sm">
+                                <div class="text-5xl mb-4">🏨</div>
+                                <h3 class="text-lg font-bold text-slate-700">為什麼歡迎語會不見？</h3>
+                                <p class="text-slate-500 text-sm mt-2">當 JSON 內容太多時，產生的網址會變得非常長，導致助理載入異常。點擊下方更新，我將為您自動壓縮 JSON 來解決這個問題。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // JSON 格式校驗
+        const jsonEl = document.getElementById('var_hotel');
+        const statusEl = document.getElementById('jsonStatus');
+        
+        jsonEl.addEventListener('input', () => {
+            try {
+                JSON.parse(jsonEl.value);
+                statusEl.innerText = "Valid JSON";
+                statusEl.className = "text-[10px] px-2 py-0.5 rounded bg-green-100 text-green-700 font-bold uppercase";
+            } catch (e) {
+                statusEl.innerText = "Invalid JSON";
+                statusEl.className = "text-[10px] px-2 py-0.5 rounded bg-red-100 text-red-700 font-bold uppercase";
+            }
+        });
+
+        function updateIframe() {
+            const loading = document.getElementById('loading');
+            const placeholder = document.getElementById('placeholder');
+            const urlPreview = document.getElementById('urlPreview');
+            const chatWrapper = document.getElementById('chatWrapper');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const charCount = document.getElementById('charCount');
+            const lengthWarning = document.getElementById('lengthWarning');
+            const urlCounter = document.getElementById('urlCounter');
+            
+            // 讀取基礎網址
+            const userBaseUrl = document.getElementById('base_url').value.trim();
+            if (!userBaseUrl) {
+                alert("請輸入有效的基礎網址！");
+                return;
+            }
+
+            loading.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            statusDot.classList.replace('bg-slate-400', 'bg-green-500');
+            statusDot.classList.add('animate-pulse');
+            statusText.innerText = "Live AI Assistant";
+
+            // 1. 獲取數據與 JSON 壓縮
+            let hotelData = document.getElementById('var_hotel').value;
+            try {
+                // 嘗試解析並重新 Stringify (去除所有換行與空格)
+                const jsonObj = JSON.parse(hotelData);
+                hotelData = JSON.stringify(jsonObj);
+                console.log("JSON 已成功壓縮，節省了空間。");
+            } catch (e) {
+                console.warn("JSON 格式有誤，將直接傳送原始字串。");
+            }
+
+            const formData = {
+                email: document.getElementById('email').value,
+                var_destination_airport_zh: document.getElementById('var_destination_airport_zh').value,
+                var_arrival_local_time: document.getElementById('var_arrival_local_time').value,
+                var_departure_local_time: document.getElementById('var_departure_local_time').value,
+                var_adult_count: document.getElementById('var_adult_count').value,
+                var_child_count: document.getElementById('var_child_count').value,
+                var_hotel: hotelData 
+            };
+            
+            // 2. 建立 URL 參數
+            const params = new URLSearchParams();
+            Object.keys(formData).forEach(key => {
+                if (formData[key]) {
+                    params.append(key, formData[key]);
+                }
+            });
+
+            // 3. 生成完整 URL
+            const connector = userBaseUrl.includes('?') ? '&' : '?';
+            const fullUrl = `${userBaseUrl}${connector}${params.toString()}`;
+            
+            // 更新網址長度偵測
+            urlCounter.classList.remove('hidden');
+            charCount.innerText = fullUrl.length;
+            if (fullUrl.length > 4000) {
+                lengthWarning.classList.remove('hidden');
+            } else {
+                lengthWarning.classList.add('hidden');
+            }
+
+            urlPreview.innerText = fullUrl;
+            urlPreview.title = fullUrl;
+
+            // 4. 重建 Iframe
+            const oldIframe = chatWrapper.querySelector('iframe');
+            if (oldIframe) chatWrapper.removeChild(oldIframe);
+
+            const iframe = document.createElement('iframe');
+            iframe.src = fullUrl;
+            iframe.className = "w-full h-full border-none relative z-10";
+            iframe.allow = "microphone *; clipboard-write";
+            
+            iframe.onload = function() {
+                setTimeout(() => {
+                    loading.classList.add('hidden');
+                }, 500);
+            };
+
+            chatWrapper.appendChild(iframe);
+        }
+    </script>
+</body>
+</html>
