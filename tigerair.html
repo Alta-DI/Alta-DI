@@ -1,289 +1,355 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 旅遊管家 - iframe tester</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #f1f5f9;
-        }
-        .chat-frame-container {
-            height: calc(100vh - 180px);
-            min-height: 500px;
-        }
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
-        }
-        /* 自定義捲軸 */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 旅遊管家 - iframe tester</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f8; min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(90deg, #3730a3, #4f46e5);
+      color: #fff; display: flex; align-items: center;
+      justify-content: space-between; padding: 12px 24px;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .header-left h1 { font-size: 1.1rem; font-weight: 700; }
+    .header-left p  { font-size: 0.7rem; opacity: .75; }
+    .header-right { font-size: 0.7rem; opacity: .85; background: rgba(255,255,255,.15); padding: 4px 12px; border-radius: 20px; }
+
+    .main {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 20px; padding: 20px 24px;
+    }
+
+    /* ── Left panel ── */
+    .config-panel {
+      background: #fff; border-radius: 14px; padding: 20px 18px;
+      display: flex; flex-direction: column; gap: 13px;
+      overflow-y: auto; max-height: calc(100vh - 90px);
+    }
+    .panel-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 1rem; font-weight: 700; color: #3730a3;
+      border-bottom: 1px solid #e5e7eb; padding-bottom: 12px;
+    }
+
+    /* ENV toggle */
+    .env-toggle {
+      display: flex; border: 1.5px solid #e5e7eb; border-radius: 8px; overflow: hidden;
+    }
+    .env-btn {
+      flex: 1; padding: 7px 0; font-size: 0.8rem; font-weight: 600;
+      background: none; border: none; cursor: pointer; color: #6b7280;
+      transition: background .15s, color .15s;
+    }
+    .env-btn.active-uat  { background: #fef3c7; color: #92400e; }
+    .env-btn.active-prod { background: #dcfce7; color: #166534; }
+    .env-btn:not(:last-child) { border-right: 1.5px solid #e5e7eb; }
+
+    /* Fields */
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label {
+      font-size: 0.76rem; font-weight: 600; color: #374151;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .req { color: #ef4444; font-size: 0.65rem; font-weight: 700; }
+    .opt { color: #9ca3af; font-size: 0.65rem; }
+
+    input[type=text], input[type=url], input[type=number],
+    input[type=datetime-local] {
+      border: 1.5px solid #d1d5db; border-radius: 8px;
+      padding: 8px 11px; font-size: 0.84rem; color: #111;
+      width: 100%; outline: none; transition: border-color .15s;
+    }
+    input:focus { border-color: #6366f1; }
+    .url-input { background: #eef2ff; border-color: #a5b4fc; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* Section divider */
+    .section-label {
+      font-size: 0.7rem; font-weight: 700; color: #6366f1;
+      text-transform: uppercase; letter-spacing: .06em;
+      border-left: 3px solid #6366f1; padding-left: 8px;
+      margin-top: 2px;
+    }
+
+    /* Return departure highlight */
+    .highlight-field input {
+      background: #f0fdf4; border-color: #86efac;
+    }
+    .highlight-field label { color: #166534; }
+    .new-badge {
+      background: #dcfce7; color: #166534;
+      font-size: 0.6rem; font-weight: 700;
+      padding: 1px 6px; border-radius: 10px;
+    }
+
+    /* JSON area */
+    .json-header { display: flex; align-items: center; justify-content: space-between; }
+    .json-label  { font-size: 0.76rem; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 5px; }
+    .json-badge  { font-size: 0.66rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+    .json-badge.valid   { background: #d1fae5; color: #065f46; }
+    .json-badge.invalid { background: #fee2e2; color: #991b1b; }
+
+    textarea.json-area {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      background: #1e1e2e; color: #a6e3a1;
+      border: none; border-radius: 8px;
+      padding: 10px 12px; font-size: 0.76rem;
+      resize: vertical; min-height: 90px; width: 100%; outline: none;
+    }
+    textarea.json-area:focus { outline: 2px solid #6366f1; }
+
+    .hint { font-size: 0.68rem; color: #9ca3af; margin-top: 2px; }
+
+    .launch-btn {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff; border: none; border-radius: 10px;
+      padding: 13px; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; width: 100%;
+      transition: opacity .15s, transform .1s;
+      margin-top: 4px;
+    }
+    .launch-btn:hover  { opacity: .92; transform: translateY(-1px); }
+    .launch-btn:active { transform: none; }
+
+    /* ── Right panel ── */
+    .chat-panel {
+      background: #fff; border-radius: 14px;
+      display: flex; flex-direction: column;
+      overflow: hidden; max-height: calc(100vh - 90px);
+    }
+    .chat-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 18px; border-bottom: 1px solid #f0f2f8;
+      font-size: 0.76rem; color: #6b7280; flex-shrink: 0;
+    }
+    .status-pill {
+      display: flex; align-items: center; gap: 6px;
+      font-weight: 700; font-size: 0.72rem; color: #374151;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; }
+    .dot.live { background: #22c55e; animation: blink 1.5s infinite; }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+    .url-counter { background: #f3f4f6; border-radius: 6px; padding: 3px 10px; }
+    .url-warn { color: #f59e0b; font-weight: 700; }
+
+    .chat-placeholder {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10px;
+      color: #9ca3af; background: #fafafa;
+    }
+    .chat-placeholder .sparkle { font-size: 2.2rem; }
+    .chat-placeholder h3 { color: #374151; font-weight: 700; font-size: 1rem; }
+    .chat-placeholder p  { font-size: 0.78rem; }
+
+    iframe#assistant-frame {
+      flex: 1; border: none; display: none;
+    }
+
+    hr { border: none; border-top: 1px dashed #e5e7eb; }
+  </style>
 </head>
-<body class="text-slate-900 antialiased">
+<body>
 
-    <!-- Header -->
-    <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-2">
-            <div class="flex items-center gap-3">
-                <span class="text-3xl">🤖</span>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight">AI 智能行程配置系統</h1>
-                    <p class="text-indigo-200 text-xs">最新參數規範測試工具</p>
-                </div>
-            </div>
-            <div class="text-xs bg-indigo-800/50 px-3 py-1 rounded-full border border-indigo-400/30 font-mono">
-                參數模式：var_hotel / var_destination / user_id ...
-            </div>
-        </div>
-    </header>
+<header>
+  <div class="header-left">
+    <span style="font-size:1.5rem">🤖</span>
+    <div>
+      <h1>AI 智能行程配置系統</h1>
+      <p>最新參數規範測試工具 · v3</p>
+    </div>
+  </div>
+  <div class="header-right">
+    var_destination / var_return_departure / var_hotel / user_id ...
+  </div>
+</header>
 
-    <main class="max-w-7xl mx-auto p-4 md:p-6">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <!-- Left: Config Form -->
-            <div class="lg:col-span-4 space-y-4">
-                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-y-auto max-h-[calc(100vh-140px)]">
-                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-indigo-700 border-b pb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        行程數據配置
-                    </h2>
-                    
-                    <form id="configForm" class="space-y-4 text-sm">
-                        <!-- Base URL Configuration -->
-                        <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
-                            <label class="block text-indigo-700 font-bold mb-1 text-xs uppercase tracking-wider">助理基礎網址</label>
-                            <input type="text" id="base_url" value="https://altatech.ai/widget/eezuywwgybk5ybgbmbjgeml/chat.html"
-                                class="w-full px-3 py-2 bg-white border border-indigo-200 rounded-lg transition-all font-mono text-xs">
-                        </div>
+<div class="main">
 
-                        <!-- User ID (取代 Email) -->
-                        <div>
-                            <label class="block text-slate-500 font-medium mb-1">用戶 User ID</label>
-                            <input type="text" id="user_id" value="user_123456"
-                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all">
-                        </div>
+  <!-- ── Left ── -->
+  <div class="config-panel">
+    <div class="panel-title">✏️ 行程數據配置</div>
 
-                        <!-- var_destination -->
-                        <div>
-                            <label class="block text-slate-500 font-medium mb-1">目的地 (var_destination)</label>
-                            <input type="text" id="var_destination" value="大阪"
-                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all">
-                        </div>
+    <!-- ENV switch -->
+    <div class="env-toggle">
+      <button class="env-btn active-uat" id="btn-uat" onclick="setEnv('uat')">🧪 UAT 測試環境</button>
+      <button class="env-btn"            id="btn-prod" onclick="setEnv('prod')">🚀 PROD 正式環境</button>
+    </div>
 
-                        <!-- Times -->
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-slate-500 font-medium mb-1 text-xs">到達時間 (arrival_time)</label>
-                                <input type="datetime-local" id="var_arrival_time" value="2026-10-21T12:30"
-                                    class="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all text-xs">
-                            </div>
-                            <div>
-                                <label class="block text-slate-500 font-medium mb-1 text-xs">離開時間 (departure_time)</label>
-                                <input type="datetime-local" id="var_departure_time" value="2026-10-31T20:40"
-                                    class="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all text-xs">
-                            </div>
-                        </div>
+    <!-- Base URL (readonly display) -->
+    <div class="field">
+      <label>助理基礎網址</label>
+      <input type="url" id="base-url" class="url-input" readonly
+        value="https://altatech.ai/widget/eezuywwgybk5ybgbmbjgeml/chat.html" />
+    </div>
 
-                        <!-- Pax Count -->
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-slate-500 font-medium mb-1 text-xs">成人人數 (adult_num)</label>
-                                <input type="number" id="var_adult_num" value="2"
-                                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all">
-                            </div>
-                            <div>
-                                <label class="block text-slate-500 font-medium mb-1 text-xs">兒童人數 (child_num)</label>
-                                <input type="number" id="var_child_num" value="1"
-                                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg transition-all">
-                            </div>
-                        </div>
+    <!-- user_id -->
+    <div class="field">
+      <label>user_id <span class="opt">選填</span></label>
+      <input type="text" id="user-id" placeholder="e.g. U_77889900" value="U_77889900" />
+    </div>
 
-                        <!-- Hotels JSON -->
-                        <div class="pt-2 border-t border-slate-100">
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="block text-indigo-700 font-bold">飯店資訊 (var_hotel)</label>
-                                <span id="jsonStatus" class="text-[10px] px-2 py-0.5 rounded bg-green-100 text-green-700 font-bold uppercase">Valid JSON</span>
-                            </div>
-                            <textarea id="var_hotel" rows="6" 
-                                class="w-full px-3 py-2 bg-slate-900 text-green-400 border border-slate-700 rounded-lg transition-all font-mono text-[11px] leading-relaxed">[
-  {
-    "CheckInDate": "2026-10-21",
-    "CheckOutDate": "2026-10-24",
-    "HotelName": "大阪難波東急STAY",
-    "HotelAddress": "大阪市中央區難波3-2-1"
+    <hr />
+    <div class="section-label">行程基本資訊</div>
+
+    <!-- var_destination -->
+    <div class="field">
+      <label>var_destination <span class="req">必填</span></label>
+      <input type="text" id="var-destination" placeholder="目的地（中文）" value="大阪" />
+    </div>
+
+    <!-- var_return_departure ← 不同點進出 -->
+    <div class="field highlight-field">
+      <label>
+        var_return_departure <span class="req">必填</span>
+        <span class="new-badge">不同點進出</span>
+      </label>
+      <input type="text" id="var-return-departure"
+        placeholder="回程出發地（中文，可與目的地不同）" value="東京" />
+      <span class="hint">若去大阪、從東京回，填「東京」</span>
+    </div>
+
+    <!-- times -->
+    <div class="row-2">
+      <div class="field">
+        <label>var_arrival_time <span class="req">必填</span></label>
+        <input type="datetime-local" id="var-arrival-time" value="2026-10-21T00:00" />
+      </div>
+      <div class="field">
+        <label>var_departure_time <span class="req">必填</span></label>
+        <input type="datetime-local" id="var-departure-time" value="2026-10-31T00:00" />
+      </div>
+    </div>
+
+    <!-- pax -->
+    <div class="row-2">
+      <div class="field">
+        <label>var_adult_num <span class="req">必填</span></label>
+        <input type="number" id="var-adult-num" value="2" min="1" />
+      </div>
+      <div class="field">
+        <label>var_child_num <span class="opt">選填</span></label>
+        <input type="number" id="var-child-num" value="1" min="0" />
+      </div>
+    </div>
+
+    <hr />
+    <div class="section-label">飯店資訊</div>
+
+    <!-- var_hotel -->
+    <div class="json-header">
+      <span class="json-label">
+        var_hotel <span class="req">必填</span>
+      </span>
+      <span class="json-badge valid" id="hotel-badge">VALID JSON</span>
+    </div>
+    <textarea class="json-area" id="var-hotel" rows="7"
+      oninput="validateJson(this,'hotel-badge')">[{"i":"2026-10-21","o":"2026-10-24","n":"大阪難波東急STAY","a":"中央區難波3-2-1"},
+{"i":"2026-10-24","o":"2026-10-27","n":"京都凱悅飯店","a":"東山區三十三間堂644-2"},
+{"i":"2026-10-27","o":"2026-10-29","n":"東京半藏門蒙特利","a":"千代田區一番町23-1"},
+{"i":"2026-10-29","o":"2026-10-31","n":"箱根強羅季之湯雪月花","a":"足柄下郡箱根町強羅1300-34"}]</textarea>
+    <span class="hint">格式：i=入住 o=退房 n=飯店名 a=地址（縮寫 Key 節省 URL 長度）</span>
+
+    <!-- Launch -->
+    <button class="launch-btn" onclick="launchAssistant()">🚀 更新行程並啟動助理</button>
+  </div>
+
+  <!-- ── Right ── -->
+  <div class="chat-panel">
+    <div class="chat-topbar">
+      <div class="status-pill">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-text">ASSISTANT IDLE</span>
+      </div>
+      <div class="url-counter">
+        網址長度：<span id="url-len">0</span> / <span class="url-warn">2048</span>
+      </div>
+      <span id="top-hint" style="font-size:0.72rem;color:#9ca3af">等待初始化...</span>
+    </div>
+
+    <div class="chat-placeholder" id="chat-placeholder">
+      <span class="sparkle">✨</span>
+      <h3>更新參數後啟動</h3>
+      <p>填妥左側欄位後，按下啟動按鈕</p>
+    </div>
+
+    <iframe id="assistant-frame" title="AI 旅遊助理" allow="microphone"></iframe>
+  </div>
+</div>
+
+<script>
+  const URLS = {
+    uat:  "https://altatech.ai/widget/eezuywwgybk5ybgbmbjgeml/chat.html",
+    prod: "https://altatech.ai/widget/eelblchio6kra5bu4amibg5/chat.html"
+  };
+  let env = 'uat';
+
+  function setEnv(e) {
+    env = e;
+    document.getElementById('base-url').value = URLS[e];
+    document.getElementById('btn-uat').className  = 'env-btn' + (e==='uat'  ? ' active-uat'  : '');
+    document.getElementById('btn-prod').className = 'env-btn' + (e==='prod' ? ' active-prod' : '');
   }
-]</textarea>
-                        </div>
 
-                        <button type="button" onclick="updateIframe()" 
-                            class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-indigo-200 flex justify-center items-center gap-2 mt-2">
-                            <span>🚀</span> 更新行程並啟動助理
-                        </button>
-                    </form>
-                </section>
-            </div>
+  function validateJson(ta, badgeId) {
+    const b = document.getElementById(badgeId);
+    try {
+      JSON.parse(ta.value);
+      b.textContent = 'VALID JSON'; b.className = 'json-badge valid';
+    } catch {
+      b.textContent = 'INVALID JSON'; b.className = 'json-badge invalid';
+    }
+  }
 
-            <!-- Right: Chatbot -->
-            <div class="lg:col-span-8">
-                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col chat-frame-container">
-                    <!-- Status Bar -->
-                    <div class="bg-slate-50 px-6 py-3 border-b border-slate-200 flex justify-between items-center">
-                        <div class="flex items-center gap-4">
-                            <div class="flex items-center gap-2">
-                                <div id="statusDot" class="w-2.5 h-2.5 bg-slate-400 rounded-full"></div>
-                                <span id="statusText" class="text-xs font-bold text-slate-600 uppercase tracking-widest">Assistant Idle</span>
-                            </div>
-                            <!-- URL Length Counter -->
-                            <div id="urlCounter" class="hidden md:flex items-center gap-2 text-[10px] px-2 py-1 bg-slate-200 rounded border border-slate-300">
-                                <span class="text-slate-500">網址長度:</span>
-                                <span id="charCount" class="font-bold">0</span>
-                                <span id="lengthLimit" class="text-slate-400">/ 2048</span>
-                            </div>
-                        </div>
-                        <div id="urlPreview" class="hidden md:block text-[10px] text-slate-400 font-mono truncate max-w-sm">
-                            等待初始化...
-                        </div>
-                    </div>
-                    
-                    <!-- Iframe Container -->
-                    <div class="flex-grow relative bg-slate-100" id="chatWrapper">
-                        <!-- Loading State -->
-                        <div id="loading" class="absolute inset-0 flex items-center justify-center bg-white z-20 hidden">
-                            <div class="flex flex-col items-center">
-                                <div class="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
-                                <p class="mt-4 text-slate-500 text-sm font-medium">正在載入行程助理...</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Placeholder -->
-                        <div id="placeholder" class="absolute inset-0 flex items-center justify-center bg-slate-50 text-center p-8 z-10">
-                            <div class="max-w-sm">
-                                <div class="text-5xl mb-4">✨</div>
-                                <h3 class="text-lg font-bold text-slate-700">更新參數後啟動</h3>
-                                <p class="text-slate-500 text-sm mt-2">參數已切換：將 email 替換為 user_id 進行識別。</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+  function launchAssistant() {
+    const hotelRaw = document.getElementById('var-hotel').value.trim();
+    let hotelParsed;
+    try { hotelParsed = JSON.parse(hotelRaw); }
+    catch { alert('var_hotel JSON 格式錯誤，請修正後再試'); return; }
 
-    <script>
-        // JSON 格式校驗
-        const jsonEl = document.getElementById('var_hotel');
-        const statusEl = document.getElementById('jsonStatus');
-        
-        jsonEl.addEventListener('input', () => {
-            try {
-                JSON.parse(jsonEl.value);
-                statusEl.innerText = "Valid JSON";
-                statusEl.className = "text-[10px] px-2 py-0.5 rounded bg-green-100 text-green-700 font-bold uppercase";
-            } catch (e) {
-                statusEl.innerText = "Invalid JSON";
-                statusEl.className = "text-[10px] px-2 py-0.5 rounded bg-red-100 text-red-700 font-bold uppercase";
-            }
-        });
+    const params = new URLSearchParams({
+      user_id:              document.getElementById('user-id').value,
+      var_destination:      document.getElementById('var-destination').value,
+      var_return_departure: document.getElementById('var-return-departure').value,
+      var_arrival_time:     document.getElementById('var-arrival-time').value.replace('T',' '),
+      var_departure_time:   document.getElementById('var-departure-time').value.replace('T',' '),
+      var_adult_num:        document.getElementById('var-adult-num').value,
+      var_child_num:        document.getElementById('var-child-num').value,
+      var_hotel:            JSON.stringify(hotelParsed),
+    });
 
-        function updateIframe() {
-            const loading = document.getElementById('loading');
-            const placeholder = document.getElementById('placeholder');
-            const urlPreview = document.getElementById('urlPreview');
-            const chatWrapper = document.getElementById('chatWrapper');
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
-            const charCount = document.getElementById('charCount');
-            const urlCounter = document.getElementById('urlCounter');
-            
-            const userBaseUrl = document.getElementById('base_url').value.trim();
-            if (!userBaseUrl) {
-                alert("請輸入有效的基礎網址！");
-                return;
-            }
+    const finalUrl = `${URLS[env]}?${params.toString()}`;
+    const len = finalUrl.length;
+    document.getElementById('url-len').textContent = len;
+    document.getElementById('url-len').style.color = len > 2048 ? '#ef4444' : '#111';
+    if (len > 2048) {
+      alert(`⚠️ URL 長度 ${len} 已超過 2048 字元限制！請縮短飯店資料。`);
+      return;
+    }
 
-            loading.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-            statusDot.classList.replace('bg-slate-400', 'bg-green-500');
-            statusDot.classList.add('animate-pulse');
-            statusText.innerText = "Live AI Assistant";
+    const frame = document.getElementById('assistant-frame');
+    frame.src = finalUrl;
+    frame.style.display = 'block';
+    document.getElementById('chat-placeholder').style.display = 'none';
 
-            let hotelData = document.getElementById('var_hotel').value;
-            try {
-                const jsonObj = JSON.parse(hotelData);
-                hotelData = JSON.stringify(jsonObj);
-            } catch (e) {
-                console.warn("JSON 格式有誤");
-            }
-
-            // 更新數據對象：將 email 改為 user_id
-            const formData = {
-                user_id: document.getElementById('user_id').value,
-                var_destination: document.getElementById('var_destination').value,
-                var_arrival_time: document.getElementById('var_arrival_time').value,
-                var_departure_time: document.getElementById('var_departure_time').value,
-                var_adult_num: document.getElementById('var_adult_num').value,
-                var_child_num: document.getElementById('var_child_num').value,
-                var_hotel: hotelData 
-            };
-            
-            const params = new URLSearchParams();
-            Object.keys(formData).forEach(key => {
-                if (formData[key]) {
-                    params.append(key, formData[key]);
-                }
-            });
-
-            const connector = userBaseUrl.includes('?') ? '&' : '?';
-            const fullUrl = `${userBaseUrl}${connector}${params.toString()}`;
-            
-            urlCounter.classList.remove('hidden');
-            const urlLength = fullUrl.length;
-            charCount.innerText = urlLength;
-            
-            if (urlLength > 2048) {
-                charCount.classList.add('text-red-600');
-            } else {
-                charCount.classList.remove('text-red-600');
-            }
-
-            urlPreview.innerText = fullUrl;
-            urlPreview.title = fullUrl;
-
-            const oldIframe = chatWrapper.querySelector('iframe');
-            if (oldIframe) chatWrapper.removeChild(oldIframe);
-
-            const iframe = document.createElement('iframe');
-            iframe.src = fullUrl;
-            iframe.className = "w-full h-full border-none relative z-10";
-            iframe.allow = "microphone *; clipboard-write";
-            
-            iframe.onload = function() {
-                setTimeout(() => {
-                    loading.classList.add('hidden');
-                }, 500);
-            };
-
-            chatWrapper.appendChild(iframe);
-        }
-    </script>
+    const dot = document.getElementById('status-dot');
+    dot.className = 'dot live';
+    document.getElementById('status-text').textContent = env === 'prod' ? 'PROD · LOADING' : 'UAT · LOADING';
+    document.getElementById('top-hint').textContent = '正在載入行程助理...';
+    frame.onload = () => {
+      document.getElementById('status-text').textContent = env === 'prod' ? 'PROD · READY' : 'UAT · READY';
+      document.getElementById('top-hint').textContent = '助理已就緒';
+    };
+  }
+</script>
 </body>
 </html>
